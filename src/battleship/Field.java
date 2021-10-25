@@ -3,20 +3,22 @@ package battleship;
 import java.util.Random;
 
 public class Field {
-    private int n;
-    private int m;
-    private Cell[][] field;
+    private final int n;
+    private final int m;
+    private final Cell[][] field;
+    private int shipsCount;
     private final Random random = new Random();
 
-    public Field(int n, int m, int carrierCount, int battleshipCount, int cruiserCount, int destroyerCount,
-                 int submarineCount) {
-        this.n = n;
-        this.m = m;
-        if (n > 30 || m > 30) {
-            throw new IllegalArgumentException("Field side cannot be bigger than 20 cells.");
+    public Field(InitData init) {
+        this.n = init.n();
+        this.m = init.m();
+        shipsCount = init.carrierCount() + init.battleshipCount() + init.cruiserCount() + init.destroyerCount() +
+                init.submarineCount();
+        if (n > 40 || m > 40 || n < 6 || m < 6) {
+            throw new IllegalArgumentException("Field side cannot be bigger than 40 cells and less then 6 cells.");
         }
-        if (this.n * this.m < (carrierCount * 21 + battleshipCount * 18 + cruiserCount * 15 + destroyerCount * 12
-                + submarineCount * 9) / 3 * 2) {
+        if (this.n * this.m < (init.carrierCount() * 21 + init.battleshipCount() * 18 + init.cruiserCount() * 15 +
+                init.destroyerCount() * 12 + init.submarineCount() * 9) / 3 * 2) {
             throw new IllegalArgumentException("Field is less than ships' fleet.");
         }
         field = new Cell[n][m];
@@ -25,33 +27,44 @@ public class Field {
                 field[i][j] = new Cell(null);
             }
         }
-        fillField(carrierCount, battleshipCount, cruiserCount, destroyerCount, submarineCount);
+        fillField(init);
     }
 
-    private void fillField(int carrierCount, int battleshipCount, int cruiserCount, int destroyerCount,
-                           int submarineCount) {
+    protected boolean hasShips() {
+        return shipsCount > 0;
+    }
 
-        for (int i = 0; i < carrierCount; i++) {
+    public int getN() {
+        return n;
+    }
+
+    public int getM() {
+        return m;
+    }
+
+    private void fillField(InitData data) {
+
+        for (int i = 0; i < data.carrierCount(); i++) {
             var carrier = new Carrier();
             addShipToMap(carrier);
         }
 
-        for (int i = 0; i < battleshipCount; i++) {
+        for (int i = 0; i < data.battleshipCount(); i++) {
             var battleship = new Battleship();
             addShipToMap(battleship);
         }
 
-        for (int i = 0; i < cruiserCount; i++) {
+        for (int i = 0; i < data.cruiserCount(); i++) {
             var cruiser = new Cruiser();
             addShipToMap(cruiser);
         }
 
-        for (int i = 0; i < destroyerCount; i++) {
+        for (int i = 0; i < data.destroyerCount(); i++) {
             var destroyer = new Destroyer();
             addShipToMap(destroyer);
         }
 
-        for (int i = 0; i < submarineCount; i++) {
+        for (int i = 0; i < data.submarineCount(); i++) {
             var submarine = new Submarine();
             addShipToMap(submarine);
         }
@@ -63,13 +76,13 @@ public class Field {
         int toY = !data.isVertical ? data.y + 1: data.y + ship.getLength();
         for (int i = data.x; i < toX; i++) {
             for (int j = data.y; j < toY; j++) {
-                field[i][j].ship = ship;
+                field[i][j].setShip(ship);
                 ship.addCell(field[i][j]);
             }
         }
     }
 
-    record ShipData(int x, int y, boolean isVertical) {
+    private record ShipData(int x, int y, boolean isVertical) {
     }
 
     private ShipData getCoordinatesOfTheShip(Ship ship) {
@@ -104,7 +117,7 @@ public class Field {
         }
         for (int i = fromX; i < coords.toX; i++) {
             for (int j = fromY; j < coords.toY; j++) {
-                if (field[i][j].ship != null) {
+                if (field[i][j].hasShip()) {
                     return false;
                 }
             }
@@ -113,7 +126,7 @@ public class Field {
         return true;
     }
 
-    record CoordsData(int toX, int toY) {
+    private record CoordsData(int toX, int toY) {
     }
 
     private CoordsData getEndCoordinates(ShipData data, Ship ship) {
@@ -145,12 +158,39 @@ public class Field {
     }
 
     protected void printField() {
+        System.out.print("\t|");
+        for (int i = 0; i < m; i++) {
+            System.out.print((i + 1) + "\t");
+        }
+        System.out.println();
+        for (int i = -1; i < m; i++) {
+            if(i == -1) {
+                System.out.print("_\t|");
+            } else {
+                System.out.print("_\t");
+            }
+        }
+        System.out.println();
         for (int i = 0; i < n; i++) {
+            System.out.print((i + 1) + "\t|");
             for (int j = 0; j < m; j++) {
                 System.out.print(field[i][j]);
-                System.out.print(" ");
+                System.out.print("\t");
             }
             System.out.println();
+        }
+    }
+
+    protected void fireAtCoordinates(int x, int y) {
+        var Cell = field[x][y];
+        Cell.shoot();
+        switch (Cell.getType()) {
+            case FiredHit -> Printer.hit();
+            case FiredMiss -> Printer.miss();
+            case Sunk -> {
+                --shipsCount;
+                Printer.sink(Cell.getShipName());
+            }
         }
     }
 }

@@ -1,5 +1,7 @@
 package battleship;
 
+import java.util.Arrays;
+
 public class Ship {
     private final int length;
     private int size;
@@ -23,5 +25,15 @@ public class Ship {
     protected void addCell(Cell cell) {
         cells[size] = cell;
         ++size;
+    }
+    
+    protected void checkIfAfloat() {
+        boolean isAllHit = Arrays.stream(cells).allMatch(val -> val.getType() == CellType.FiredHit);
+        if(isAllHit) {
+            for (var cell :
+                    cells) {
+                cell.setType(CellType.Sunk);
+            }
+        }
     }
 }
