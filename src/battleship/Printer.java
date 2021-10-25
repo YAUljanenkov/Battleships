@@ -75,8 +75,8 @@ public class Printer {
         System.out.println("Press Enter to start a game.");
     }
 
-    public static void congratulate() {
-        System.out.println("Hooray! You won!");
+    public static void congratulate(int tries) {
+        System.out.println("Hooray! You won! It took " + tries + " hits for you to win.");
     }
 
     public static void bye() {

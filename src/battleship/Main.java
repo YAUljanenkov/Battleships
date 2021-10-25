@@ -6,6 +6,7 @@ import java.util.Scanner;
 
 public class Main {
 
+    // Main field object.
     static Field field;
 
     public static void main(String[] args) {
@@ -18,28 +19,44 @@ public class Main {
         startGame();
         Printer.clear();
         field.printField();
+        int tries = 0;
         while (field.hasShips()) {
             var coords = getFireCoordinates();
+            ++tries;
             nextRound(coords);
         }
-        Printer.congratulate();
+        Printer.congratulate(tries);
         Printer.bye();
     }
 
+    /**
+     * Record containing coordinates on user's hit.
+     */
     private record Coordinates(int x, int y) {}
 
+    /**
+     * make new hit.
+     * @param coords a cell where user hits.
+     */
     protected static void nextRound(Coordinates coords) {
         Printer.clear();
         field.fireAtCoordinates(coords.x, coords.y);
         field.printField();
     }
 
+    /**
+     * THis method welcomes user to start a game.
+     */
     protected static void startGame() {
         var in = new Scanner(System.in);
         Printer.start();
         in.nextLine();
     }
 
+    /**
+     * This method gets coordinates from user of cell to hit.
+     * @return coordinates of a cell to hit.
+     */
     private static Coordinates getFireCoordinates() {
         int x, y;
         while (true) {
@@ -62,7 +79,11 @@ public class Main {
         return new Coordinates(x, y);
     }
 
-
+    /**
+     * Tries to make a field from a command line args.
+     * @param args command line args.
+     * @return a field instance or null if user wants to quit.
+     */
     public static Field initializeField(String[] args) {
         Field field = null;
         InitData data;
@@ -92,6 +113,11 @@ public class Main {
         return field;
     }
 
+    /**
+     * Makes an InitData object from Command Line Args.
+     * @param args command line args.
+     * @return a data required to initialize game.
+     */
     private static InitData readArgs(String[] args) {
         if (args.length != 7) {
             throw new IllegalArgumentException("Not enough arguments");
@@ -110,7 +136,10 @@ public class Main {
         return new InitData(intArgs);
     }
 
-
+    /**
+     * Gets all required data from user and command line.
+     * @return InitData object.
+     */
     private static InitData readInitFromLine() {
         Printer.askForInitArguments();
         Scanner in = new Scanner(System.in);
@@ -153,6 +182,11 @@ public class Main {
         return new InitData(shipsData.stream().mapToInt(i -> i).toArray());
     }
 
+    /**
+     * Reads number from a line.
+     * @param in scanner object.
+     * @return a number or -1 if user did not input a number.
+     */
     public static int readNumber(Scanner in) {
         int n = -1;
         try {
