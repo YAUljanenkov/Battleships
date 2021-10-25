@@ -28,7 +28,14 @@ again or quit. Press Enter if you want to try again. Write "quit" and press Ente
 If the field is created and filled with ships, you will be asked if you are ready to start a game. Press Enter to start
 a game.
 
-You will see a field. Now you can write coordinates of the cell you want to strike. Write them in a format <height coord> <width coord>,
+You will see a field. Cells can be in 4 different states.
+
+If cell is not fired, it will be seen as "°".
+If cell was fired and there was no ship, it will be seen as "o".
+If cell was fired and there was a ship, but it hasn't sunk yet, it will be seen as "H".
+If cell was fired, and there was a ship, and it has sunk, it will be seen as "S".
+
+Now you can write coordinates of the cell you want to strike. Write them in a format <height coord> <width coord>,
 so two positive integers separated by space.
 
 When you destroy all the ships, the game will write you amount of tries you have made and finish.
